@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# This script takes:
+# <host> <community> <megs>
+
+snmpwalk="/usr/bin/snmpwalk"
+snmpget="/usr/bin/snmpget"
+
+function usage() { 
+echo "$0 localhost public 100"
+echo "where localhost is server"
+echo "public is snmp pass"
+echo "100 is when swap reaches below a 100Mb"
+echo "-----------------------------------"
+}
+
+
+server=$1;
+pass=$2;
+limit=$3;
+
+
+if [ $# -lt 3 ]; then
+    usage;
+    exit 1;
+fi
+
+
+run=$(snmpget -v2c -c $pass $server  .1.3.6.1.4.1.2021.4.4.0)
+if [[ $run =~ "INTEGER" ]]; then 
+  free=$(echo $run|awk -F"INTEGER: " '{smb=( $2 / 1024); print smb}')
+	if [[ $free > $limit ]]; then
+		echo "SWAP OK:  Free $free MB."
+		exit 0;
+	else
+		echo "SWAP CRITICAL: Free $free MB."
+		exit 2;
+	fi
+else 
+	echo "SWAP CRITICAL: does not exist"; 
+	exit 2;
+fi 
