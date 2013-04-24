@@ -41,19 +41,20 @@ if [ $# -lt 3 ]; then
 fi
 
 run=$(snmpget -v2c -c $pass $server  .1.3.6.1.4.1.2021.4.4.0)
-if [[ $run =~ "INTEGER" ]]; then 
-	free=$(echo $run|awk -F"INTEGER: " '{smb=( $2 / 1024); print smb}')
-	if [[ $free > $limit ]]; then
-		graph="swap="$free"MB;;;0"
-		echo "SWAP OK:  Free $free MB.|$graph"
-		exit 0;
-	else
-		graph="swap="$free"MB;;;0"
-		echo "SWAP CRITICAL: Free $free MB.|$graph"
-		exit 2;
-	fi
-else 
-		graph="swap=0MB;;;0"
-	echo "SWAP CRITICAL: does not exist|$graph"; 
-	exit 2;
-fi 
+if [[ $run =~ "INTEGER" ]]; then
+        free=$(echo $run|awk -F"INTEGER: " '{smb=( $2 / 1024); print smb}')
+        if [[ $free > $limit ]]; then
+                graph="/swap="$free"MB;;;;0 "
+                echo "SWAP OK: Free $free MB|$graph"
+                exit 0;
+        else
+                graph="/swap="$free"MB;;;;0 "
+                echo "SWAP CRITICAL: Free $free MB|$graph"
+                exit 2;
+        fi
+else
+                graph="/swap=0MB;;;;0 "
+        echo "SWAP CRITICAL: does not exist|$graph";
+        exit 2;
+fi
+
